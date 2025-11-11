@@ -38,7 +38,7 @@ class Card(BaseModel):
 # ======================================================
 # FastAPI app setup
 # ======================================================
-app = FastAPI(title="Nebula API")
+app = FastAPI(title="Nebula-API")
 
 # Enable CORS (so your frontend can connect)
 app.add_middleware(
