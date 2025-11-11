@@ -1,0 +1,42 @@
+# Nebula - ULTRAMAN Card Game Collection App
+
+#### Super-Alpha 111125
+
+## To run
+
+### API
+
+You need NPM and Python 3.14, and what is listed in requirements.txt
+
+`
+pip install -r requirements.txt
+`
+
+To launch the API, from project directory
+
+`
+uvicorn nebula_api:app --reload
+`
+
+This runs the API on local port 8000
+
+🔹 http://127.0.0.1:8000/docs → interactive Swagger UI
+
+🔹 /cards → list cards
+
+🔹 /cards?rarity=R → filter by rarity
+
+🔹 /cards?feature=Kaiju → get Kaiju cards
+
+🔹 /stats → see totals and distributions
+
+
+### Web Frontend
+
+From nebula-frontend directory:
+
+`
+npm install && npm run dev
+`
+
+This runs the Web Frontend on local port 5173
