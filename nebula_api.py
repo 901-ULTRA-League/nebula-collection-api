@@ -73,11 +73,6 @@ def query_db(query: str, params: tuple = ()):
 def read_root():
     return {"message": "Welcome to the Nebula API for ULTRAMAN!"}
 
-@app.get("/favicon.ico", include_in_schema=False)
-async def favicon():
-    # /vercel.svg is automatically served when included in the public/** directory.
-    return RedirectResponse("/vercel.svg", status_code=307)
-
 @app.get("/cards", response_model=List[Card])
 def get_cards(
     rarity: Optional[str] = Query(None),
