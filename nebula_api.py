@@ -136,8 +136,8 @@ def get_stats():
     cursor.execute("SELECT feature, COUNT(*) FROM cards GROUP BY feature")
     feature_counts = {r: c for r, c in cursor.fetchall()}
 
-    cursor.execute("SELECT character_name, COUNT(*) FROM cards WHERE character_name <> '-' GROUP BY character_name ORDER BY COUNT(*) DESC LIMIT 25")
-    top_characters = {r: c for r, c in cursor.fetchall()}
+    cursor.execute("SELECT character_name, COUNT(*) FROM cards WHERE character_name <> '-' AND feature = 'Ultra Hero' GROUP BY character_name ORDER BY COUNT(*) DESC LIMIT 25")
+    top_ultras = {r: c for r, c in cursor.fetchall()}
 
     cursor.execute("SELECT character_name, COUNT(*) FROM cards WHERE character_name <> '-' AND feature = 'Kaiju' GROUP BY character_name ORDER BY COUNT(*) DESC LIMIT 25")
     top_kaiju = {r: c for r, c in cursor.fetchall()}
@@ -148,6 +148,6 @@ def get_stats():
         "total_cards": total,
         "rarity_distribution": rarity_counts,
         "feature_distribution": feature_counts,
-        "top_25_characters": top_characters,
+        "top_25_ultras": top_ultras,
         "top_25_kaiju": top_kaiju,
     }
