@@ -79,13 +79,13 @@ def read_root():
             "stats": "/stats"
             }
 
-@app.get("favicon.png")
-def redirect_favicon_png():
-    return RedirectResponse(url="/favicon.ico")
+@app.get("/favicon.png", include_in_schema=False)
+async def redirect_favicon_png():
+    return RedirectResponse(url="/favicon.ico", status_code=307)
 
-@app.get("vercel.svg")
-def redirect_favicon_svg():
-    return RedirectResponse(url="/favicon.ico")
+@app.get("/vercel.svg", include_in_schema=False)
+async def redirect_favicon_svg():
+    return RedirectResponse(url="/favicon.ico", status_code=307)
 
 @app.get("/cards", response_model=List[Card])
 def get_cards(
