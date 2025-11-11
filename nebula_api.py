@@ -79,6 +79,14 @@ def read_root():
             "stats": "/stats"
             }
 
+@app.get("favicon.png")
+def redirect_favicon_png():
+    return RedirectResponse(url="/favicon.ico")
+
+@app.get("vercel.svg")
+def redirect_favicon_svg():
+    return RedirectResponse(url="/favicon.ico")
+
 @app.get("/cards", response_model=List[Card])
 def get_cards(
     rarity: Optional[str] = Query(None),
