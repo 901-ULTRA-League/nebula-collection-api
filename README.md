@@ -26,6 +26,8 @@ This runs the API on local port 8000
 
 🔹 /cards?rarity=R → filter by rarity
 
+🔹 /search?q=Tiga → search by name, effect, flavor text
+
 🔹 /cards?feature=Kaiju → get Kaiju cards
 
 🔹 /stats → see totals and distributions
