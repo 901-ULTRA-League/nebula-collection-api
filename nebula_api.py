@@ -71,7 +71,13 @@ def query_db(query: str, params: tuple = ()):
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the Nebula API for ULTRAMAN!"}
+    return {"message": "Welcome to the Nebula API for ULTRAMAN!",
+            "documentation": "/docs",
+            "cards": "/cards",
+            "cards by number": "/cards/{card_id}",
+            "search": "/search?q={query}",
+            "stats": "/stats"
+            }
 
 @app.get("/cards", response_model=List[Card])
 def get_cards(
