@@ -68,6 +68,10 @@ def query_db(query: str, params: tuple = ()):
 # Endpoints
 # ======================================================
 
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the Nebula API for ULTRAMAN!"}
+
 @app.get("/cards", response_model=List[Card])
 def get_cards(
     rarity: Optional[str] = Query(None),
