@@ -6,7 +6,7 @@
 
 ### API
 
-You need NPM and Python 3.14, and what is listed in requirements.txt
+You need Python 3.11+, and what is listed in requirements.txt
 
 `
 pip install -r requirements.txt
