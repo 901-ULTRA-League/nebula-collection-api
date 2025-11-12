@@ -34,6 +34,6 @@ jobs:
           git config user.name "GitHub Action"
           git config user.email "actions@github.com"
           git add ultraman_cards.csv
-          git add ultraman_card.db
+          git add ultraman_cards.db
           git commit -m "Sync Cards CSV and DB" || echo "No changes"
           git push
