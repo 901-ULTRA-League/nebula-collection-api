@@ -1,4 +1,4 @@
-# Nebula - ULTRAMAN Card Game Collection App
+# Nebula - ULTRAMAN Card Game Collection App API
 
 #### Super-Alpha 111125
 
@@ -31,14 +31,3 @@ This runs the API on local port 8000
 🔹 /cards?feature=Kaiju → get Kaiju cards
 
 🔹 /stats → see totals and distributions
-
-
-### Web Frontend
-
-From nebula-frontend directory:
-
-`
-npm install && npm run dev
-`
-
-This runs the Web Frontend on local port 5173
