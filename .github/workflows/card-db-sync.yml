@@ -11,6 +11,9 @@ jobs:
       - name: Checkout this repo
         uses: actions/checkout@v4
 
+      - name: Install Requirements
+        run: pip install -r requirements.txt
+
       - name: Pull external file
         run: |
           curl -o ultraman_cards.csv \
