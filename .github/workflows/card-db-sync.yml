@@ -1,4 +1,4 @@
-name: Sync ultraman_cards.csv
+name: Sync ultraman_cards.csv to DB
 on:
   schedule:
     - cron: '0 2 * * *'  # Runs every day at 2 AM UTC
@@ -15,6 +15,9 @@ jobs:
         run: |
           curl -o ultraman_cards.csv \
           https://raw.githubusercontent.com/QueenLinuxGlitch/ultraman-card-db-api/refs/heads/main/ultraman_cards.csv
+
+      - name: Sync DB
+        run: python update_card_db.py
 
       - name: Commit changes if any
         run: |
