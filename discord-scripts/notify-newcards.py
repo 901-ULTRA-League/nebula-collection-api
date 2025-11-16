@@ -3,8 +3,8 @@ import os
 import requests
 
 API_URL = "https://nebula-collection-api.vercel.app/cards"
-WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
-CACHE_FILE = "last_cards.json"
+WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
+CACHE_FILE = "discord-scripts/last_cards.json"
 
 
 def load_previous_ids():
@@ -20,10 +20,31 @@ def save_current_ids(ids):
 
 
 def send_discord_notification(card):
-    message = {
-        "content": f"🆕 **New Card Added:** {card['name']} (ID: {card['id']})\nRarity: {card.get('rarity')}\nType: {card.get('type_name')}"
+    image_url = card.get("image_url")
+    # message = {
+    #     "content": f"🆕 **New Card Added:**\n"+
+    #     f"{card['name']} (ID: {card['number']})\n"+
+    #     f"Rarity: {card.get('rarity')}\n"+
+    #     f"Type: {card.get('type')}\n"
+    # }
+    embed = {
+        "title": f"🆕 New Card Added: {card['name']}",
+        "description": (
+            f"**Number:** {card['number']}\n"
+            f"**Rarity:** {card['rarity']}\n"
+            f"**Feature:** {card['feature']}\n"
+            # f"**Type:** {card['type']}"
+        ),
+        "color": 0x3498db,  # blue
     }
-    requests.post(WEBHOOK_URL, json=message)
+
+    if image_url:
+        embed["image"] = {"url": image_url}
+
+    payload = {
+        "embeds": [embed]
+    }
+    requests.post(WEBHOOK_URL, json=payload)
 
 
 def main():
