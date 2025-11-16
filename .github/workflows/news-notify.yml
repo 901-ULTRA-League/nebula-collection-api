@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  check_cards:
+  check_news:
     runs-on: ubuntu-latest
     environment: Production
     env:
