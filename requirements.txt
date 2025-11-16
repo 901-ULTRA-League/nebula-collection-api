@@ -5,3 +5,4 @@ uvicorn==0.38.0
 numpy==1.26.4
 httpx
 pytest
+requests

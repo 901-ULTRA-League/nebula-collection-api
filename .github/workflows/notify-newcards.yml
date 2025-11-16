@@ -1,0 +1,34 @@
+name: Notify New Cards
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # every 15 minutes
+  workflow_dispatch:
+
+jobs:
+  check_cards:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run monitor
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          python discord-scripts/notify_new_cards.py
+
+      - name: Commit changes if any
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "actions@github.com"
+          git add discord-scripts/last_cards.json
+          git commit -m "New Cards" || echo "No changes"
+          git push
