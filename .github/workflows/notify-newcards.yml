@@ -31,5 +31,6 @@ jobs:
           git config user.name "GitHub Action"
           git config user.email "actions@github.com"
           git add discord-scripts/last_cards.json
+          git add discord-scripts/errata_cards.json
           git commit -m "New Cards" || echo "No changes"
           git push
