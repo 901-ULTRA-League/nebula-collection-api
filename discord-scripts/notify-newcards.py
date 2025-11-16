@@ -4,6 +4,11 @@ import requests
 
 API_URL = "https://nebula-collection-api.vercel.app/cards"
 WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
+if WEBHOOK_URL:
+    print("WEBHOOK_URL detected.")
+else:
+    print("WEBHOOK_URL not found. Please set the DISCORD_WEBHOOK_URL environment variable.")
+    exit(1)
 CACHE_FILE = "discord-scripts/last_cards.json"
 
 
