@@ -83,22 +83,12 @@ def query_db(query: str, params: tuple = ()):
 
 @app.get("/")
 def read_root():
-    ascii_art = r"""
-      _   _      _ _         __        __         _     _ 
-     | \ | |    | | |        \ \      / /        | |   | |
-     |  \| | ___| | | ___     \ \ /\ / /__  _ __ | | __| |
-     | . ` |/ _ \ | |/ _ \     \ V  V / _ \| '_ \| |/ _` |
-     | |\  |  __/ | | (_) |     \_/\_/ (_) | | | | | (_| |
-     |_| \_|\___|_|_|\___( )                 |_| |_|\__,_|
-                         |/                                 
-    """
     return {"message": "Welcome to the Nebula API for ULTRAMAN!",
             "documentation": "/docs",
             "cards": "/cards",
             "cards by number": "/cards/{card_id}",
             "search": "/search?q={query}",
-            "stats": "/stats",
-            "art": ascii_art
+            "stats": "/stats"
             }
 
 @app.get("/favicon.png", include_in_schema=False)
