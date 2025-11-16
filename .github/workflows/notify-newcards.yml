@@ -8,6 +8,7 @@ on:
 jobs:
   check_cards:
     runs-on: ubuntu-latest
+    environment: Production
     env:
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
     steps:
