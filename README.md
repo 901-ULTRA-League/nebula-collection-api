@@ -1,6 +1,6 @@
 # Nebula - ULTRAMAN Card Game Collection App API
 
-#### Super-Alpha 111125
+#### Alpha 111625
 
 ## To run
 

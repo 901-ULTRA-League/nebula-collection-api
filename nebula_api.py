@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 import sqlite3
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 # ======================================================
 # Pydantic model for returning card data
@@ -11,15 +11,24 @@ from pydantic import BaseModel
 class Card(BaseModel):
     id: int
     name: str
+    ruby: Optional[str]
     type_name: Optional[str]
     character_name: Optional[str]
     rarity: Optional[str]
     type: Optional[str]
     feature: Optional[str]
-    level: Optional[int]
+    level: Optional[str]
+    @field_validator("level")
+    def strip_decimal_level(cls, v): #pylint: disable=E0213
+        return v[:-2] if isinstance(v, str) and v.endswith(".0") else v
+    round: Optional[str]
+    @field_validator("round")
+    def strip_decimal_round(cls, v): #pylint: disable=E0213
+        return v[:-2] if isinstance(v, str) and v.endswith(".0") else v
     battle_power_1: Optional[int]
     battle_power_2: Optional[int]
     battle_power_3: Optional[int]
+    battle_power_4: Optional[int]
     battle_power_ex: Optional[int]
     effect: Optional[str]
     flavor_text: Optional[str]
@@ -29,10 +38,13 @@ class Card(BaseModel):
     branch: Optional[str]
     number: Optional[str]
     participating_works: Optional[str]
+    participating_works_url: Optional[str]
     publication_year: Optional[int]
     illustrator_name: Optional[str]
     image_url: Optional[str]
     thumbnail_image_url: Optional[str]
+    errata_enable: bool
+    errata_url: Optional[str]
 
 
 # ======================================================
@@ -90,9 +102,13 @@ async def redirect_favicon_svg():
 @app.get("/cards", response_model=List[Card])
 def get_cards(
     rarity: Optional[str] = Query(None),
-    level: Optional[int] = Query(None),
+    level: Optional[str] = Query(None),
+    round: Optional[str] = Query(None), # pylint: disable=redefined-builtin
     character_name: Optional[str] = Query(None),
     feature: Optional[str] = Query(None),
+    type: Optional[str] = Query(None), # pylint: disable=redefined-builtin
+    publication_year: Optional[int] = Query(None),
+    number: str = Query(None),
 ):
     """
     Fetch all cards or filter by rarity, level, character name, or feature (Ultra Hero, Kaiju, Scene)
@@ -101,17 +117,29 @@ def get_cards(
     params = []
 
     if rarity:
-        query += " AND rarity = ?"
+        query += " AND rarity LIKE ?"
         params.append(rarity)
-    if level is not None:
-        query += " AND level = ?"
-        params.append(level)
+    if level:
+        query += " AND level LIKE ?"
+        params.append(f"{level}%")
+    if round:
+        query += " AND round LIKE ?"
+        params.append(f"{round}%")
     if character_name:
         query += " AND character_name LIKE ?"
         params.append(f"%{character_name}%")
     if feature:
         query += " AND feature LIKE ?"
         params.append(f"%{feature}%")
+    if type:
+        query += " AND type = ?"
+        params.append(type)
+    if publication_year:
+        query += " AND publication_year = ?"
+        params.append(publication_year)
+    if number:
+        query += " AND number LIKE ?"
+        params.append(number)
 
     return query_db(query, tuple(params))
 
