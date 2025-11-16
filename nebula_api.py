@@ -109,6 +109,7 @@ def get_cards(
     type: Optional[str] = Query(None), # pylint: disable=redefined-builtin
     publication_year: Optional[int] = Query(None),
     number: str = Query(None),
+    errata_enable: bool = Query(None)
 ):
     """
     Fetch all cards or filter by rarity, level, character name, or feature (Ultra Hero, Kaiju, Scene)
@@ -140,6 +141,9 @@ def get_cards(
     if number:
         query += " AND number LIKE ?"
         params.append(number)
+    if errata_enable:
+        query += " AND errata_enable = ?"
+        params.append(1 if errata_enable else 0)
 
     return query_db(query, tuple(params))
 
