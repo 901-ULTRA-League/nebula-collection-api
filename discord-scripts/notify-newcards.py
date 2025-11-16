@@ -26,12 +26,6 @@ def save_current_ids(ids):
 
 def send_discord_notification(card):
     image_url = card.get("image_url")
-    # message = {
-    #     "content": f"🆕 **New Card Added:**\n"+
-    #     f"{card['name']} (ID: {card['number']})\n"+
-    #     f"Rarity: {card.get('rarity')}\n"+
-    #     f"Type: {card.get('type')}\n"
-    # }
     embed = {
         "title": f"🆕 New Card Added: {card['name']}",
         "description": (
@@ -57,7 +51,7 @@ def main():
     response.raise_for_status()
     cards = response.json()
 
-    current_ids = {c["id"] for c in cards}
+    current_ids = {c["number"] for c in cards}
     previous_ids = load_previous_ids()
 
     new_ids = current_ids - previous_ids
@@ -67,7 +61,7 @@ def main():
 
     # Notify for each new card
     for card in cards:
-        if card["id"] in new_ids:
+        if card["number"] in new_ids:
             send_discord_notification(card)
 
     # Update cache
