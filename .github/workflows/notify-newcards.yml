@@ -21,7 +21,7 @@ jobs:
 
       - name: Run monitor
         env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
           python discord-scripts/notify-newcards.py
 
