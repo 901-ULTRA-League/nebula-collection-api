@@ -93,7 +93,6 @@ def main():
 
     if not new_ids:
         print("No new cards detected.")
-        return
     if not new_errata_ids:
         print("No new errata detected.")
         return
@@ -101,10 +100,9 @@ def main():
     # Notify for each new card
     for card in cards:
         if card["number"] in new_ids:
-            if card["errata_enable"]:
-                send_errata_notification(card)
-            else:
-                send_discord_notification(card)
+            send_discord_notification(card)
+        if card["number"] in new_errata_ids:
+            send_errata_notification(card)
 
     # Update cache
     save_current_ids(current_ids)
