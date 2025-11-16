@@ -85,7 +85,7 @@ def query_db(query: str, params: tuple = ()):
 def read_root():
     return {"message": "Welcome to the Nebula API for ULTRAMAN!",
             "documentation": "/docs",
-            "cards": "/cards",
+            "cards": "/cards (filterable)",
             "cards by number": "/cards/{card_id}",
             "search": "/search?q={query}",
             "stats": "/stats"
