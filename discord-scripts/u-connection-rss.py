@@ -13,7 +13,7 @@ if DISCORD_WEBHOOK_URL:
 else:
     print("DISCORD_WEBHOOK_URL not found. Please set the NEWS_WEBHOOK environment variable.")
     exit(1)
-STATE_FILE = "last_rss_uc_item.json"
+STATE_FILE = "discord-scripts/last_rss_uc_item.json"
 # -------------------------------------
 
 
