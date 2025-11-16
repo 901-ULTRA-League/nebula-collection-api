@@ -2,7 +2,7 @@
 name = "Nebula-API"
 version = "0.1.0"
 description = "an ULTRAMAN Card Game Collection App"
-requires-python = ">=3.12" # Specify the Python version requirement
+requires-python = ">=3.11" # Specify the Python version requirement
 dependencies = [
     "fastapi>=0.121.1",
     "pydantic==2.12.4",
