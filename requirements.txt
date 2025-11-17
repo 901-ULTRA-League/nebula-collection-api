@@ -1,7 +1,7 @@
 fastapi==0.121.2
+hypercorn==0.18.0
 pandas==2.3.3
 pydantic==2.12.4
+pytest==9.0.1
+starlette==0.50.0
 uvicorn==0.38.0
-numpy==2.3.4
-httpx
-pytest
