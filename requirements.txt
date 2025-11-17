@@ -5,5 +5,3 @@ uvicorn==0.38.0
 numpy==2.3.4
 httpx
 pytest
-requests
-feedparser
