@@ -1,10 +1,10 @@
 # Nebula - ULTRAMAN Card Game Collection App API
 
-#### Alpha 111625
+## Beta 111725
 
-## To run
+[![API Tests](https://github.com/901-ULTRA-League/nebula-collection-api/actions/workflows/api-tests.yml/badge.svg)](https://github.com/901-ULTRA-League/nebula-collection-api/actions/workflows/api-tests.yml)
 
-### API
+## Running locally
 
 You need Python 3.11+, and what is listed in requirements.txt
 
@@ -21,13 +21,3 @@ uvicorn nebula_api:app --reload
 This runs the API on local port 8000
 
 🔹 http://127.0.0.1:8000/docs → interactive Swagger UI
-
-🔹 /cards → list cards
-
-🔹 /cards?rarity=R → filter by rarity
-
-🔹 /search?q=Tiga → search by name, effect, flavor text
-
-🔹 /cards?feature=Kaiju → get Kaiju cards
-
-🔹 /stats → see totals and distributions
