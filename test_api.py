@@ -67,7 +67,7 @@ def test_get_cards_with_character_name_filter():
     assert isinstance(data, list)
     if data:
         for card in data:
-            assert "Tiga" in card["character_name"]
+            assert "TIGA" in card["character_name"]
 
 
 def test_get_card_by_number():
