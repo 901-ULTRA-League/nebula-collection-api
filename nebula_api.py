@@ -129,7 +129,7 @@ def get_cards(
     params = []
 
     if rarity:
-        query += " AND rarity LIKE ?"
+        query += " AND rarity = ?"
         params.append(f"%{rarity}%")
     if level:
         query += " AND level LIKE ?"
