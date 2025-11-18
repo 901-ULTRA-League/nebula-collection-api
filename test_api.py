@@ -10,13 +10,24 @@ def test_read_root():
     response = client.get("/")
     assert response.status_code == 200
     assert response.json() == {
-        "message": "Welcome to the Nebula API for ULTRAMAN!",
-        "documentation": "/docs",
-        "cards": "/cards",
-        "cards by number": "/cards/{card_id}",
-        "search": "/search?q={query}",
-        "stats": "/stats",
-    }
+            "message": "Welcome to the Nebula API for ULTRAMAN!",
+            "API_docs": "/docs",
+            "cards": "/cards",
+            "filters": {
+                "rarity": "/cards?rarity={rarity} (C,U,R)",
+                "level": "/cards?level={level} (1,3,7)",
+                "round": "/cards?round={round} (1,2,3)",
+                "character_name": "/cards?character_name={character_name} (Tiga,Zero,Dyna)",
+                "feature": "/cards?feature={feature} (Ultra,Kaiju,Scene)",
+                "type": "/cards?type={type} (Speed,Power,Basic)",
+                "publication_year": "/cards?publication_year={year} (1996,1997,2004)",
+                "number": "/cards?number={number} (BP01-001, e.g.)",
+                "errata_enable": "/cards?errata_enable=true"
+                }, 
+            "card by number": "/card/{number}",
+            "search": "/search?q={query}",
+            "stats": "/stats"
+            }
 
 
 def test_get_cards_no_filter():
@@ -39,25 +50,24 @@ def test_get_cards_with_rarity_filter():
 
 def test_get_cards_with_level_filter():
     """Test filtering cards by level."""
-    response = client.get("/cards?level=5")
+    response = client.get("/cards?level=3")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
     if data:
         for card in data:
-            assert card["level"] == "5"
+            assert card["level"] == "3"
 
 
 def test_get_cards_with_character_name_filter():
     """Test filtering cards by character name."""
-    # Assuming 'Ultraman' is a valid character name
-    response = client.get("/cards?character_name=Ultraman")
+    response = client.get("/cards?character_name=Tiga")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
     if data:
         for card in data:
-            assert "Ultraman" in card["character_name"]
+            assert "Tiga" in card["character_name"]
 
 
 def test_get_card_by_number():
@@ -69,7 +79,7 @@ def test_get_card_by_number():
 
     if all_cards:
         card_number = all_cards[0]["number"]
-        response = client.get(f"/cards/{card_number}")
+        response = client.get(f"/card/{card_number}")
         assert response.status_code == 200
         card = response.json()
         assert card["number"] == card_number
