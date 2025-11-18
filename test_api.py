@@ -1,3 +1,4 @@
+import random
 import pytest
 from fastapi.testclient import TestClient
 from nebula_api import app
@@ -39,35 +40,41 @@ def test_get_cards_no_filter():
 
 def test_get_cards_with_rarity_filter():
     """Test filtering cards by rarity."""
-    response = client.get("/cards?rarity=UR")
+    choices = ["C", "U", "R", "RR", "RRR", "RRRR", "SP", "SSSP", "UR", "ExP"]
+    random_choice = random.choice(choices)
+    response = client.get("/cards?rarity=" + random_choice)
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
     if data:
         for card in data:
-            assert card["rarity"] == "UR"
+            assert card["rarity"] == random_choice
 
 
 def test_get_cards_with_level_filter():
     """Test filtering cards by level."""
-    response = client.get("/cards?level=3")
+    choices = ["1", "2", "3", "4", "5", "6", "7"]
+    random_choice = random.choice(choices)
+    response = client.get("/cards?level=" + random_choice)
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
     if data:
         for card in data:
-            assert card["level"] == "3"
+            assert card["level"] == random_choice
 
 
 def test_get_cards_with_character_name_filter():
     """Test filtering cards by character name."""
-    response = client.get("/cards?character_name=Tiga")
+    choices = ["TIGA", "DYNA", "ZERO", "Z", "GAIA", "BELIAL", "GOMORA", "ZETTON", "REKINESS", "ELEKING"]
+    random_choice = random.choice(choices)
+    response = client.get("/cards?character_name=" + random_choice)
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
     if data:
         for card in data:
-            assert "TIGA" in card["character_name"]
+            assert random_choice in card["character_name"]
 
 
 def test_get_card_by_number():
