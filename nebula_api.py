@@ -84,9 +84,20 @@ def query_db(query: str, params: tuple = ()):
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Nebula API for ULTRAMAN!",
-            "documentation": "/docs",
-            "cards": "/cards (filterable)",
-            "cards by number": "/cards/{card_id}",
+            "API_docs": "/docs",
+            "cards": "/cards",
+            "filters": {
+                "rarity": "/cards?rarity={rarity} (C,U,R)",
+                "level": "/cards?level={level} (1,3,7)",
+                "round": "/cards?round={round} (1,2,3)",
+                "character_name": "/cards?character_name={character_name} (Tiga,Zero,Dyna)",
+                "feature": "/cards?feature={feature} (Ultra,Kaiju,Scene)",
+                "type": "/cards?type={type} (Speed,Power,Basic)",
+                "publication_year": "/cards?publication_year={year} (1996,1997,2004)",
+                "number": "/cards?number={number} (BP01-001, e.g.)",
+                "errata_enable": "/cards?errata_enable=true"
+                }, 
+            "card by number": "/card/{number}",
             "search": "/search?q={query}",
             "stats": "/stats"
             }
@@ -119,7 +130,7 @@ def get_cards(
 
     if rarity:
         query += " AND rarity LIKE ?"
-        params.append(rarity)
+        params.append(f"%{rarity}%")
     if level:
         query += " AND level LIKE ?"
         params.append(f"{level}%")
@@ -133,14 +144,14 @@ def get_cards(
         query += " AND feature LIKE ?"
         params.append(f"%{feature}%")
     if type:
-        query += " AND type = ?"
-        params.append(type)
+        query += " AND type LIKE ?"
+        params.append(f"%{type}%")
     if publication_year:
         query += " AND publication_year = ?"
         params.append(publication_year)
     if number:
         query += " AND number LIKE ?"
-        params.append(number)
+        params.append(f"%{number}%")
     if errata_enable:
         query += " AND errata_enable = ?"
         params.append(1 if errata_enable else 0)
@@ -148,10 +159,10 @@ def get_cards(
     return query_db(query, tuple(params))
 
 
-@app.get("/cards/{card_id}", response_model=Card)
+@app.get("/card/{card_id}", response_model=Card)
 def get_card(card_id: str):
     """Fetch a single card by Number"""
-    result = query_db("SELECT * FROM cards WHERE number = ?", (card_id,))
+    result = query_db("SELECT * FROM cards WHERE number LIKE ?", (f"%{card_id}%",))
     if not result:
         return {"error": "Card not found"}
     return result[0]
