@@ -28,7 +28,6 @@ def test_get_cards_no_filter():
 
 def test_get_cards_with_rarity_filter():
     """Test filtering cards by rarity."""
-    # Assuming 'UR' is a valid rarity
     response = client.get("/cards?rarity=UR")
     assert response.status_code == 200
     data = response.json()
@@ -40,15 +39,12 @@ def test_get_cards_with_rarity_filter():
 
 def test_get_cards_with_level_filter():
     """Test filtering cards by level."""
-    # Assuming '5' is a valid level
     response = client.get("/cards?level=5")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
     if data:
         for card in data:
-            # The level might be returned as '5' or '5.0' before pydantic model validation
-            # The validator strips .0, so we check for '5'
             assert card["level"] == "5"
 
 
@@ -81,14 +77,13 @@ def test_get_card_by_number():
 
 # def test_get_card_not_found():
 #     """Test fetching a card that does not exist."""
-#     response = client.get("/cards/non-existent-card-number")
+#     response = client.get("/card/non-existent-card-number")
 #     # The API returns a 500 with an error message in the body
 #     assert response.status_code == 500
 #     assert response.json().contains({"error": "Card not found"})
 
 def test_search_cards():
     """Test searching for cards."""
-    # Assuming 'attack' is a word in some card's name or effect
     response = client.get("/search?q=attack")
     assert response.status_code == 200
     assert isinstance(response.json(), list)
