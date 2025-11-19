@@ -39,10 +39,23 @@ def test_get_cards_no_filter():
     assert response.status_code == 200
     assert isinstance(response.json(), list)
 
-
+# @pytest.mark.parametrize("rarity, expected", [
+#     ("C", True),
+#     ("U", True),
+#     ("R", True),
+#     ("RR", True),
+#     ("RRR", True),
+#     ("RRRR", True),
+#     ("SP", True),
+#     ("SSSP", True),
+#     ("UR", True),
+#     ("ExP", True),
+#     ("AP", True),
+#     ("IR", False)
+# ])
 def test_get_cards_with_rarity_filter():
     """Test filtering cards by rarity."""
-    choices = ["C", "U", "R", "RR", "RRR", "RRRR", "SP", "SSSP", "UR", "ExP"]
+    choices = ["C", "U", "R", "RR", "RRR", "RRRR", "SP", "SSSP", "UR", "ExP", "AP"]
     random_choice = random.choice(choices)
     response = client.get("/cards?rarity=" + random_choice)
     assert response.status_code == 200
@@ -65,6 +78,18 @@ def test_get_cards_with_level_filter():
         for card in data:
             assert card["level"] == random_choice
 
+def test_get_cards_with_round_filter():
+    """Test filtering cards by round."""
+    choices = ["0","1", "2", "3", "4", "5", "6"]
+    random_choice = random.choice(choices)
+    response = client.get("/cards?round=" + random_choice)
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    if data:
+        for card in data:
+            assert card["round"] == random_choice
+
 
 def test_get_cards_with_character_name_filter():
     """Test filtering cards by character name."""
@@ -77,6 +102,56 @@ def test_get_cards_with_character_name_filter():
     if data:
         for card in data:
             assert random_choice in card["character_name"]
+
+
+@pytest.mark.parametrize("feature, expected", [
+    ("Ultra", True),
+    ("Kaiju", True),
+    ("Scene", True),
+    ("InvalidFeature", False)
+])
+def test_get_cards_with_feature_filter(feature, expected):
+    """Test filtering cards by feature for both valid and invalid features."""
+    response = client.get(f"/cards?feature={feature}")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+
+    if expected:
+        # If we expect results, assert that the list is not empty
+        assert data, f"Expected results for feature '{feature}', but got none."
+        # And assert that all returned cards have the correct feature
+        for card in data:
+            assert feature in card["feature"]
+    else:
+        # If we don't expect results, assert that the list is empty
+        assert not data, f"Expected no results for feature '{feature}', but got some."
+
+
+def test_get_cards_with_type_filter():
+    """Test filtering cards by type."""
+    choices = ["ARMED", "BASIC", "POWER", "SPEED", "DEVASTATION", "HAZARD", "METEO", "INVASION"]
+    random_choice = random.choice(choices)
+    response = client.get("/cards?type=" + random_choice)
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    if data:
+        for card in data:
+            assert random_choice in card["type"]
+
+
+def test_get_cards_with_publication_year_filter():
+    """Test filtering cards by publication year."""
+    choices = [1966, 1967, 1996, 1997, 1998, 1999, 2004, 2006, 2009, 2010, 2013, 2014, 2015, 2016, 2017, 2018, 2020, 2021, 2022, 2023, 2024, 2025]
+    random_choice = random.choice(choices)
+    response = client.get(f"/cards?publication_year={random_choice}")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    if data:
+        for card in data:
+            assert card["publication_year"] == random_choice
 
 
 def test_get_card_by_number():
@@ -94,12 +169,26 @@ def test_get_card_by_number():
         assert card["number"] == card_number
 
 
+def test_get_card_errata_enabled():
+    """Test fetching cards with errata enabled."""
+    response = client.get("/cards?errata_enable=true")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    if data:
+        for card in data:
+            assert card["errata_enable"] is True
+
+
 # def test_get_card_not_found():
 #     """Test fetching a card that does not exist."""
 #     response = client.get("/card/non-existent-card-number")
 #     # The API returns a 500 with an error message in the body
 #     assert response.status_code == 500
-#     assert response.json().contains({"error": "Card not found"})
+#     # assert response.json().contains({"error": "Card not found"})
+#     # assert "error" in response.json()
+#     # assert response.json()["input"][0]["error"] == "Card not found"
+
 
 def test_search_cards():
     """Test searching for cards."""
