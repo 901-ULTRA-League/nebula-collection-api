@@ -1,4 +1,6 @@
 name: Sync ultraman_cards.csv to DB
+permissions:
+  contents: write
 on:
   schedule:
     - cron: '0 2 * * *'  # Runs every day at 2 AM UTC
