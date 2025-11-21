@@ -17,6 +17,7 @@ def test_read_root():
             "API_docs": "/docs",
             "cards": "/cards",
             "filters": {
+                "name": "/cards?name={name} (e.g., Tiga)",
                 "rarity": "/cards?rarity={rarity} (C,U,R)",
                 "level": "/cards?level={level} (1,3,7)",
                 "round": "/cards?round={round} (1,2,3)",
