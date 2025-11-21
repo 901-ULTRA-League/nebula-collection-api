@@ -87,6 +87,7 @@ def read_root():
             "API_docs": "/docs",
             "cards": "/cards",
             "filters": {
+                "name": "/cards?name={name} (e.g., Tiga)",
                 "rarity": "/cards?rarity={rarity} (C,U,R)",
                 "level": "/cards?level={level} (1,3,7)",
                 "round": "/cards?round={round} (1,2,3)",
@@ -112,6 +113,7 @@ async def redirect_favicon_svg():
 
 @app.get("/cards", response_model=List[Card])
 def get_cards(
+    name: Optional[str] = Query(None),
     rarity: Optional[str] = Query(None),
     level: Optional[str] = Query(None),
     round: Optional[str] = Query(None), # pylint: disable=redefined-builtin
@@ -128,8 +130,11 @@ def get_cards(
     query = "SELECT * FROM cards WHERE 1=1"
     params = []
 
+    if name:
+        query += " AND name LIKE ?"
+        params.append(f"%{name}%")
     if rarity:
-        query += " AND rarity = ?"
+        query += " AND rarity LIKE ?"
         params.append(f"%{rarity}%")
     if level:
         query += " AND level LIKE ?"
