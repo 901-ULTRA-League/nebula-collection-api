@@ -61,7 +61,8 @@ CREATE TABLE cards (
     image_url TEXT,
     thumbnail_image_url TEXT,
     errata_enable BOOLEAN,
-    errata_url TEXT
+    errata_url TEXT,
+    display_card_bundle_names TEXT
 );
 """)
 
