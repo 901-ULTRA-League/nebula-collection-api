@@ -26,7 +26,7 @@ jobs:
       - name: Pull external file
         run: |
           curl -o ultraman_cards.csv \
-          https://raw.githubusercontent.com/QueenLinuxGlitch/ultraman-card-db-api/refs/heads/main/ultraman_cards.csv
+          https://raw.githubusercontent.com/901-ULTRA-League/ultraman-card-scraper/refs/heads/main/ultraman_cards.csv
 
       - name: Sync DB
         run: python update_card_db.py
