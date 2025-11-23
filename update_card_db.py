@@ -1,5 +1,5 @@
-import pandas as pd
 import sqlite3
+import pandas as pd
 
 # === CONFIGURATION ===
 CSV_FILE = "ultraman_cards.csv"       # Update this if the file name changes
