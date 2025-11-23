@@ -1,6 +1,6 @@
 # Nebula - ULTRAMAN Card Game Collection App API
 
-## Beta 111725
+## Beta 112225
 
 [![API Tests](https://github.com/901-ULTRA-League/nebula-collection-api/actions/workflows/api-tests.yml/badge.svg)](https://github.com/901-ULTRA-League/nebula-collection-api/actions/workflows/api-tests.yml)
 
