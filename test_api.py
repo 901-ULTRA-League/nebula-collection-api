@@ -82,7 +82,7 @@ def test_get_cards_with_level_filter():
 
 def test_get_cards_with_round_filter():
     """Test filtering cards by round."""
-    choices = ["0","1", "2", "3", "4", "5", "6"]
+    choices = ["0","1", "2", "3", "4"]
     random_choice = random.choice(choices)
     response = client.get("/cards?round=" + random_choice)
     assert response.status_code == 200

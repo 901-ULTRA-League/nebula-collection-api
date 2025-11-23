@@ -45,6 +45,7 @@ class Card(BaseModel):
     thumbnail_image_url: Optional[str]
     errata_enable: bool
     errata_url: Optional[str]
+    display_card_bundle_names: str
 
 
 # ======================================================
