@@ -30,7 +30,8 @@ def test_read_root():
                 }, 
             "card by number": "/card/{number}",
             "search": "/search?q={query}",
-            "stats": "/stats"
+            "stats": "/stats",
+            "copyright": "901 ULTRA League"
             }
 
 

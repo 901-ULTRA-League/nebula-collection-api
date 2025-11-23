@@ -100,7 +100,8 @@ def read_root():
                 }, 
             "card by number": "/card/{number}",
             "search": "/search?q={query}",
-            "stats": "/stats"
+            "stats": "/stats",
+            "copyright": "901 ULTRA League"
             }
 
 @app.get("/favicon.png", include_in_schema=False)
