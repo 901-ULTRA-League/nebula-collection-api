@@ -1,11 +1,24 @@
-# TODO: Write additional tests for other filters and edge cases
-
-import random
 import pytest
+from fastapi.exceptions import ResponseValidationError
 from fastapi.testclient import TestClient
 from nebula_api import app
 
 client = TestClient(app)
+KNOWN_CHARACTER_NAMES = [
+    "AGUL", "ALIEN BALTAN", "ALIEN METRON", "ARC", "BAZANGA", "BELIAL",
+    "BEMULAR", "BLAZAR", "BLU", "C.O.V.", "DARK LUGIEL", "DARK MEPHISTO",
+    "DARKLOPS ZERO", "DECKER", "DESTROYER", "DINOZOLE", "DUGRID", "DYNA",
+    "ELEKING", "EMI", "FIVE KING", "GAIA", "GAIGARAID", "GALACTRON",
+    "GARGORGON", "GATANOTHOR", "GEBALGA", "GEED", "GENEGARG", "GIGANTRON",
+    "GINGA", "GIVAS", "GOLBA", "GOLZA", "GOMORA", "GRAIM", "GREGORE",
+    "GRIGIO BONE", "GUIL ARC", "HAYAO SATO", "HIKARI", "IZAC",
+    "JUGGLUS JUGGLER", "KEN SATO", "KING OF MONS", "KUTUURA", "KYRIELOID",
+    "MEBIUS", "NEO DARAMBIA", "NEXUS", "OMEGA", "ORB", "PAZUZU",
+    "PEDANIUM ZETTON", "REKINESS", "ROSSO", "SATAN BIZOR", "SHAGONG",
+    "SHEPHERDON", "SKULL GOMORA", "SPHERESAURUS", "TERRAPHASER",
+    "THUNDER KILLER", "TIGA", "TRIGARON", "TRIGGER", "VALGENESS", "VICTORY",
+    "X", "Z", "ZADIME", "ZAMSHER", "ZERO", "ZETTON", "ZOVARAS",
+]
 
 
 def test_read_root():
@@ -52,69 +65,87 @@ def test_get_cards_with_limit_filter():
     assert isinstance(data, list)
     assert len(data) <= limit
 
-# @pytest.mark.parametrize("rarity, expected", [
-#     ("C", True),
-#     ("U", True),
-#     ("R", True),
-#     ("RR", True),
-#     ("RRR", True),
-#     ("RRRR", True),
-#     ("SP", True),
-#     ("SSSP", True),
-#     ("UR", True),
-#     ("ExP", True),
-#     ("AP", True),
-#     ("IR", False)
-# ])
-def test_get_cards_with_rarity_filter():
-    """Test filtering cards by rarity."""
-    choices = ["C", "U", "R", "RR", "RRR", "RRRR", "SP", "SSSP", "UR", "ExP", "AP"]
-    random_choice = random.choice(choices)
-    response = client.get("/cards?rarity=" + random_choice)
+@pytest.mark.parametrize(
+    "rarity, expected_results",
+    [
+        ("C", True),
+        ("U", True),
+        ("R", True),
+        ("RR", True),
+        ("RRR", True),
+        ("RRRR", True),
+        ("SP", True),
+        ("SSSP", True),
+        ("UR", True),
+        ("ExP", True),
+        ("AP", True),
+        ("INVALID_RARITY", False),
+    ],
+)
+def test_get_cards_with_rarity_filter(rarity, expected_results):
+    """Valid rarities should return results; invalid should return empty list."""
+    response = client.get(f"/cards?rarity={rarity}")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
-    if data:
-        for card in data:
-            assert card["rarity"] == random_choice
+    if expected_results:
+        assert data, f"Expected results for rarity {rarity}"
+        assert all(card["rarity"] == rarity for card in data)
+    else:
+        assert not data
 
 
-def test_get_cards_with_level_filter():
-    """Test filtering cards by level."""
-    choices = ["1", "2", "3", "4", "5", "6", "7"]
-    random_choice = random.choice(choices)
-    response = client.get("/cards?level=" + random_choice)
+@pytest.mark.parametrize(
+    "level, expected_results",
+    [("1", True), ("3", True), ("7", True), ("9", False)],
+)
+def test_get_cards_with_level_filter(level, expected_results):
+    """Levels that exist should return results; unexpected ones should not."""
+    response = client.get(f"/cards?level={level}")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
-    if data:
-        for card in data:
-            assert card["level"] == random_choice
+    if expected_results:
+        assert data, f"Expected results for level {level}"
+        assert all(card["level"] == level for card in data)
+    else:
+        assert not data
 
-def test_get_cards_with_round_filter():
-    """Test filtering cards by round."""
-    choices = ["0","1", "2", "3", "4"]
-    random_choice = random.choice(choices)
-    response = client.get("/cards?round=" + random_choice)
+@pytest.mark.parametrize(
+    "round_value, expected_results",
+    [("0", True), ("1", True), ("4", True), ("9", False)],
+)
+def test_get_cards_with_round_filter(round_value, expected_results):
+    """Rounds that exist should return results; unexpected ones should not."""
+    response = client.get(f"/cards?round={round_value}")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
-    if data:
-        for card in data:
-            assert card["round"] == random_choice
+    if expected_results:
+        assert data, f"Expected results for round {round_value}"
+        assert all(card["round"] == round_value for card in data)
+    else:
+        assert not data
 
 
-def test_get_cards_with_character_name_filter():
-    """Test filtering cards by character name."""
-    choices = ["TIGA", "DYNA", "ZERO", "Z", "GAIA", "BELIAL", "GOMORA", "ZETTON", "REKINESS", "ELEKING"]
-    random_choice = random.choice(choices)
-    response = client.get("/cards?character_name=" + random_choice)
+@pytest.mark.parametrize("character_name", KNOWN_CHARACTER_NAMES)
+def test_get_cards_with_character_name_filter(character_name):
+    """Ensure every known character name filter returns matching cards."""
+    response = client.get(f"/cards?character_name={character_name}")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
-    if data:
-        for card in data:
-            assert random_choice in card["character_name"]
+    assert data, f"No cards returned for character {character_name}"
+    for card in data:
+        assert character_name in card["character_name"]
+
+
+@pytest.mark.parametrize("character_name", ["UNKNOWN", "12345", "not-a-character"])
+def test_get_cards_with_character_name_filter_invalid(character_name):
+    """Invalid character names should return an empty list."""
+    response = client.get(f"/cards?character_name={character_name}")
+    assert response.status_code == 200
+    assert response.json() == []
 
 
 @pytest.mark.parametrize("feature, expected", [
@@ -141,30 +172,48 @@ def test_get_cards_with_feature_filter(feature, expected):
         assert not data, f"Expected no results for feature '{feature}', but got some."
 
 
-def test_get_cards_with_type_filter():
-    """Test filtering cards by type."""
-    choices = ["ARMED", "BASIC", "POWER", "SPEED", "DEVASTATION", "HAZARD", "METEO", "INVASION"]
-    random_choice = random.choice(choices)
-    response = client.get("/cards?type=" + random_choice)
+@pytest.mark.parametrize(
+    "type_value, expected_results",
+    [
+        ("ARMED", True),
+        ("BASIC", True),
+        ("POWER", True),
+        ("SPEED", True),
+        ("DEVASTATION", True),
+        ("HAZARD", True),
+        ("METEO", True),
+        ("INVASION", True),
+        ("FLYING", False),
+    ],
+)
+def test_get_cards_with_type_filter(type_value, expected_results):
+    """Valid types should return results; invalid types should not."""
+    response = client.get(f"/cards?type={type_value}")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
-    if data:
-        for card in data:
-            assert random_choice in card["type"]
+    if expected_results:
+        assert data, f"Expected results for type {type_value}"
+        assert all(type_value in card["type"] for card in data)
+    else:
+        assert not data
 
 
-def test_get_cards_with_publication_year_filter():
-    """Test filtering cards by publication year."""
-    choices = [1966, 1967, 1996, 1997, 1998, 1999, 2004, 2006, 2009, 2010, 2013, 2014, 2015, 2016, 2017, 2018, 2020, 2021, 2022, 2023, 2024, 2025]
-    random_choice = random.choice(choices)
-    response = client.get(f"/cards?publication_year={random_choice}")
+@pytest.mark.parametrize(
+    "year, expected_results",
+    [(1966, True), (2018, True), (2025, True), (1800, False)],
+)
+def test_get_cards_with_publication_year_filter(year, expected_results):
+    """Publication years in the dataset should return data; out-of-range years should not."""
+    response = client.get(f"/cards?publication_year={year}")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
-    if data:
-        for card in data:
-            assert card["publication_year"] == random_choice
+    if expected_results:
+        assert data, f"Expected results for publication year {year}"
+        assert all(card["publication_year"] == year for card in data)
+    else:
+        assert not data
 
 
 def test_get_card_by_number():
@@ -193,16 +242,6 @@ def test_get_card_errata_enabled():
             assert card["errata_enable"] is True
 
 
-# def test_get_card_not_found():
-#     """Test fetching a card that does not exist."""
-#     response = client.get("/card/non-existent-card-number")
-#     # The API returns a 500 with an error message in the body
-#     assert response.status_code == 500
-#     # assert response.json().contains({"error": "Card not found"})
-#     # assert "error" in response.json()
-#     # assert response.json()["input"][0]["error"] == "Card not found"
-
-
 def test_search_cards():
     """Test searching for cards."""
     response = client.get("/search?q=attack")
@@ -221,3 +260,69 @@ def test_get_stats():
     assert "top_25_ultras" in stats
     assert "top_25_kaiju" in stats
 
+
+def test_get_cards_number_filter_returns_expected_card():
+    """Use a concrete card number to verify field normalization and errata flag."""
+    response = client.get("/cards?number=BP04-031")
+    assert response.status_code == 200
+    data = response.json()
+    assert data, "Expected at least one card for BP04-031"
+    card = data[0]
+    assert card["number"] == "BP04-031"
+    assert card["name"] == "Ultraman Z"
+    assert card["feature"] == "Ultra Hero"
+    assert card["type"] == "SPEED"
+    assert card["rarity"] == "U"
+    assert card["level"] == "3"
+    assert card["publication_year"] == 2020
+    assert card["errata_enable"] is True
+
+
+def test_get_cards_combined_filters_and_limit():
+    """Ensure multiple filters and limit work together."""
+    response = client.get("/cards?feature=Ultra Hero&rarity=R&limit=3")
+    assert response.status_code == 200
+    cards = response.json()
+    assert cards and len(cards) <= 3
+    for card in cards:
+        assert card["feature"] == "Ultra Hero"
+        assert card["rarity"] == "R"
+
+
+def test_get_cards_limit_validation_error():
+    """Invalid limit should be rejected by FastAPI validation."""
+    response = client.get("/cards?limit=0")
+    assert response.status_code == 422
+
+
+def test_get_card_not_found_returns_error_payload():
+    """
+    Unexpected card ids currently trigger a FastAPI response validation error due to the response model.
+    Capture that behavior explicitly so regressions are visible.
+    """
+    with pytest.raises(ResponseValidationError):
+        client.get("/card/DOES-NOT-EXIST-999")
+
+
+def test_publication_year_type_validation_error():
+    """Non-integer publication year should trigger validation."""
+    response = client.get("/cards?publication_year=not-a-number")
+    assert response.status_code == 422
+
+
+def test_search_matches_effect_text():
+    """Search should inspect effect text, not just names."""
+    response = client.get("/search?q=draw two cards")
+    assert response.status_code == 200
+    cards = response.json()
+    numbers = {card["number"] for card in cards}
+    assert "BP01-010" in numbers
+
+
+def test_stats_totals_match_database_snapshot():
+    """Verify stats payload matches expected dataset snapshot values."""
+    response = client.get("/stats")
+    assert response.status_code == 200
+    stats = response.json()
+    assert stats["total_cards"] == 872
+    assert stats["feature_distribution"].get("Ultra Hero") == 630
