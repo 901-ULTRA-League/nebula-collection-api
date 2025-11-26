@@ -1,0 +1,13 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "Nebula Cards",
+  "name_for_model": "nebula_cards",
+  "description_for_model": "Look up ULTRAMAN trading cards, filter by rarity/feature/type/year, fetch a specific card by number, search card text, and retrieve collection stats.",
+  "auth": { "type": "none" },
+  "api": {
+    "type": "openapi",
+    "url": "https://nebula-collection-api.vercel.app/.well-known/openapi.yaml"
+  },
+  "contact_email": "queenlinuxtechgroup@gmail.com",
+  "legal_info_url": "https://nebula-collection-api.vercel.app/"
+}
