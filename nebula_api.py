@@ -103,6 +103,7 @@ def read_root():
             "card by number": "/card/{number}",
             "search": "/search?q={query}",
             "stats": "/stats",
+            "version": "1.0.0",
             "copyright": "901 ULTRA League"
             }
 
