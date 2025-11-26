@@ -97,7 +97,8 @@ def read_root():
                 "type": "/cards?type={type} (Speed,Power,Basic)",
                 "publication_year": "/cards?publication_year={year} (1996,1997,2004)",
                 "number": "/cards?number={number} (BP01-001, e.g.)",
-                "errata_enable": "/cards?errata_enable=true"
+                "errata_enable": "/cards?errata_enable=true",
+                "limit": "/cards?limit={limit} (e.g., 25)"
                 }, 
             "card by number": "/card/{number}",
             "search": "/search?q={query}",
@@ -124,7 +125,8 @@ def get_cards(
     type: Optional[str] = Query(None), # pylint: disable=redefined-builtin
     publication_year: Optional[int] = Query(None),
     number: str = Query(None),
-    errata_enable: bool = Query(None)
+    errata_enable: bool = Query(None),
+    limit: Optional[int] = Query(None, ge=1)
 ):
     """
     Fetch all cards or filter by rarity, level, character name, or feature (Ultra Hero, Kaiju, Scene)
@@ -162,6 +164,10 @@ def get_cards(
     if errata_enable:
         query += " AND errata_enable = ?"
         params.append(1 if errata_enable else 0)
+
+    if limit:
+        query += " LIMIT ?"
+        params.append(limit)
 
     return query_db(query, tuple(params))
 

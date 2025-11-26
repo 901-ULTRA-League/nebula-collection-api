@@ -26,7 +26,8 @@ def test_read_root():
                 "type": "/cards?type={type} (Speed,Power,Basic)",
                 "publication_year": "/cards?publication_year={year} (1996,1997,2004)",
                 "number": "/cards?number={number} (BP01-001, e.g.)",
-                "errata_enable": "/cards?errata_enable=true"
+                "errata_enable": "/cards?errata_enable=true",
+                "limit": "/cards?limit={limit} (e.g., 25)"
                 }, 
             "card by number": "/card/{number}",
             "search": "/search?q={query}",
@@ -40,6 +41,16 @@ def test_get_cards_no_filter():
     response = client.get("/cards")
     assert response.status_code == 200
     assert isinstance(response.json(), list)
+
+
+def test_get_cards_with_limit_filter():
+    """Test limiting the number of returned cards."""
+    limit = 5
+    response = client.get(f"/cards?limit={limit}")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) <= limit
 
 # @pytest.mark.parametrize("rarity, expected", [
 #     ("C", True),
