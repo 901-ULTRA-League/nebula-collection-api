@@ -325,5 +325,5 @@ def test_stats_totals_match_database_snapshot():
     response = client.get("/stats")
     assert response.status_code == 200
     stats = response.json()
-    assert stats["total_cards"] == 872
-    assert stats["feature_distribution"].get("Ultra Hero") == 630
+    assert stats["total_cards"] == 894
+    assert stats["feature_distribution"].get("Ultra Hero") == 649
