@@ -122,7 +122,7 @@ Validation errors:
 - `/cards?limit=0` returns HTTP `422`.
 - `/cards?publication_year=not-a-number` returns HTTP `422`.
 
-### `GET /card/{card_id}`
+### `GET /card/{card_number}`
 
 Returns the first card whose `number` contains the supplied path segment.
 
@@ -130,7 +130,7 @@ Path parameters:
 
 | Name | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `card_id` | string | Yes | Despite the parameter name, this is intended for card numbers such as `BP04-031`. It is not the integer primary key. |
+| `card_number` | string | Yes | This is intended for card numbers such as `BP04-031`. It is not the integer primary key. |
 
 Examples:
 
