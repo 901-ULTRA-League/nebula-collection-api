@@ -2,11 +2,6 @@
 
 > Nebula API is a public FastAPI service for querying an ULTRAMAN Card Game card database. It exposes card records, filtered card lists, full-text card search, and aggregate statistics for deck-building, collection apps, bots, and AI assistants.
 
-Base URLs:
-
-- Production: use the deployed host for this project.
-- Local development: `http://127.0.0.1:8000`
-
 Primary machine-readable API metadata:
 
 - OpenAPI JSON: `/openapi.json`
@@ -444,23 +439,3 @@ For AI assistants:
 - Non-integer `publication_year`: HTTP `422`.
 - `limit < 1`: HTTP `422`.
 - Missing `/card/{card_id}` result: currently returns an error object that does not match the declared response model; clients should handle this defensively.
-
-## Local Development
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-Run the API:
-
-```bash
-uvicorn nebula_api:app --reload
-```
-
-Open:
-
-- `http://127.0.0.1:8000/docs`
-- `http://127.0.0.1:8000/llms.txt`
-
