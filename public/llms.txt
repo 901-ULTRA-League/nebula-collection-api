@@ -1,0 +1,466 @@
+# Nebula API
+
+> Nebula API is a public FastAPI service for querying an ULTRAMAN Card Game card database. It exposes card records, filtered card lists, full-text card search, and aggregate statistics for deck-building, collection apps, bots, and AI assistants.
+
+Base URLs:
+
+- Production: use the deployed host for this project.
+- Local development: `http://127.0.0.1:8000`
+
+Primary machine-readable API metadata:
+
+- OpenAPI JSON: `/openapi.json`
+- Swagger UI: `/docs`
+- ReDoc: `/redoc`
+- LLM guide: `/llms.txt`
+
+General behavior:
+
+- Response format is JSON unless noted otherwise.
+- This file is served as `text/plain; charset=utf-8`.
+- CORS is enabled for all origins, methods, and headers.
+- Authentication is not required.
+- No explicit rate limiting is implemented in this application.
+- The API is read-only. All public card endpoints use `GET`.
+- Unknown query parameters are ignored by FastAPI unless they conflict with declared parameters.
+- FastAPI validation errors return HTTP `422` with the standard validation error payload.
+- The backing database is SQLite (`ultraman_cards.db`) with one primary `cards` table.
+- Current local database snapshot contains 1,218 card rows.
+
+Important implementation notes for clients:
+
+- Card numbers are stored in the `number` field, such as `BP04-031`.
+- `/card/{card_id}` looks up cards by `number` using a substring match, not by the integer `id` field.
+- `/cards?number=...` also uses a substring match against the `number` field.
+- `name`, `character_name`, `feature`, `type`, `level`, `round`, and `number` filters use SQL `LIKE` matching.
+- `rarity` uses exact matching with `COLLATE NOCASE`.
+- `publication_year` uses exact integer matching.
+- `errata_enable` only filters when the supplied value is truthy. Supplying `false` does not filter for non-errata cards.
+- `limit` must be an integer greater than or equal to 1.
+- `level` and `round` are normalized in API responses: stored values such as `"3.0"` and `"1.0"` are returned as `"3"` and `"1"`.
+- Some nullable database values may be returned as `null`.
+- Image fields point to remote card art URLs when available.
+
+## Endpoints
+
+### `GET /`
+
+Returns a compact API index with links and sample filter forms.
+
+Typical response:
+
+```json
+{
+  "message": "Welcome to the Nebula API for ULTRAMAN!",
+  "API_docs": "/docs",
+  "cards": "/cards",
+  "filters": {
+    "name": "/cards?name={name} (e.g., Tiga)",
+    "rarity": "/cards?rarity={rarity} (C,U,R)",
+    "level": "/cards?level={level} (1,3,7)",
+    "round": "/cards?round={round} (1,2,3)",
+    "character_name": "/cards?character_name={character_name} (Tiga,Zero,Dyna)",
+    "feature": "/cards?feature={feature} (Ultra,Kaiju,Scene)",
+    "type": "/cards?type={type} (Speed,Power,Basic)",
+    "publication_year": "/cards?publication_year={year} (1996,1997,2004)",
+    "number": "/cards?number={number} (BP01-001, e.g.)",
+    "errata_enable": "/cards?errata_enable=true",
+    "limit": "/cards?limit={limit} (e.g., 25)"
+  },
+  "card by number": "/card/{number}",
+  "search": "/search?q={query}",
+  "stats": "/stats",
+  "version": "1.0.0",
+  "copyright": "901 ULTRA League"
+}
+```
+
+### `GET /llms.txt`
+
+Returns this guide for language models, agents, client generators, and developers.
+
+Response:
+
+- Content type: `text/plain; charset=utf-8`
+- Body: Markdown-flavored plain text.
+
+### `GET /cards`
+
+Returns a list of card objects. With no query parameters, this returns every card row in the database.
+
+Use `limit` when exploring the API or building assistant tools to avoid requesting the full dataset unintentionally.
+
+Query parameters:
+
+| Name | Type | Required | Matching behavior | Notes |
+| --- | --- | --- | --- | --- |
+| `name` | string | No | substring `LIKE` | Matches the card `name` field. Example: `Tiga`. |
+| `rarity` | string | No | exact, case-insensitive | Common values include `C`, `U`, `R`, `RR`, `RRR`, `RRRR`, `SP`, `SSSP`, `UR`, `ExP`, `AP`. |
+| `level` | string | No | prefix `LIKE` | Examples: `1`, `2`, `3`, `4`, `5`, `6`, `7`. |
+| `round` | string | No | prefix `LIKE` | Examples: `0`, `1`, `2`, `3`, `4`. |
+| `character_name` | string | No | substring `LIKE` | Examples: `TIGA`, `ZERO`, `DYNA`, `Z`, `BELIAL`. |
+| `feature` | string | No | substring `LIKE` | Current values include `Ultra Hero`, `Ultra Mech`, `Kaiju`, `Scene`. |
+| `type` | string | No | substring `LIKE` | Current values include `ARMED`, `BASIC`, `DEVASTATION`, `HAZARD`, `INVASION`, `METEO`, `POWER`, `SPEED`. |
+| `publication_year` | integer | No | exact | Current dataset range is 1966 through 2025. |
+| `number` | string | No | substring `LIKE` | Examples: `BP01-001`, `BP04-031`, or `BP04`. |
+| `errata_enable` | boolean | No | exact true only | Use `true` to return cards with errata. `false` does not filter. |
+| `limit` | integer | No | SQL `LIMIT` | Must be `>= 1`; `0` returns HTTP `422`. |
+
+Examples:
+
+- `/cards?limit=10`
+- `/cards?name=Ultraman%20Z`
+- `/cards?character_name=TIGA`
+- `/cards?feature=Ultra%20Hero&rarity=R&limit=3`
+- `/cards?type=SPEED&publication_year=2020`
+- `/cards?number=BP04-031`
+- `/cards?errata_enable=true`
+
+Success response:
+
+- HTTP `200`
+- JSON array of `Card` objects.
+- Empty result sets return `[]`.
+
+Validation errors:
+
+- `/cards?limit=0` returns HTTP `422`.
+- `/cards?publication_year=not-a-number` returns HTTP `422`.
+
+### `GET /card/{card_id}`
+
+Returns the first card whose `number` contains the supplied path segment.
+
+Path parameters:
+
+| Name | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `card_id` | string | Yes | Despite the parameter name, this is intended for card numbers such as `BP04-031`. It is not the integer primary key. |
+
+Examples:
+
+- `/card/BP04-031`
+- `/card/BP01-001`
+
+Success response:
+
+- HTTP `200`
+- A single `Card` object.
+
+Not-found behavior:
+
+- The implementation returns `{"error": "Card not found"}` when no row matches.
+- Because the endpoint declares `response_model=Card`, FastAPI may raise a response validation error for this not-found payload in local/test contexts.
+- Clients should prefer `/cards?number=...` when they need predictable empty-list behavior for missing cards.
+
+### `GET /search`
+
+Searches card text fields.
+
+Query parameters:
+
+| Name | Type | Required | Matching behavior | Notes |
+| --- | --- | --- | --- | --- |
+| `q` | string | Yes | substring `LIKE` | Searches `name`, `effect`, and `flavor_text`. |
+
+Examples:
+
+- `/search?q=attack`
+- `/search?q=draw%20two%20cards`
+- `/search?q=Ultraman`
+
+Success response:
+
+- HTTP `200`
+- JSON array of `Card` objects.
+- Empty result sets return `[]`.
+
+Validation errors:
+
+- Omitting `q` returns HTTP `422`.
+
+### `GET /stats`
+
+Returns aggregate statistics for the card database.
+
+Success response:
+
+- HTTP `200`
+- JSON object with distribution maps.
+
+Response fields:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `total_cards` | integer | Total number of rows in the `cards` table. |
+| `rarity_distribution` | object | Counts grouped by `rarity`. |
+| `feature_distribution` | object | Counts grouped by `feature`. |
+| `type_distribution` | object | Counts grouped by `type`, excluding `NULL` type values. |
+| `publication_year_distribution` | object | Counts grouped by `publication_year`, sorted ascending by year. JSON object keys are strings. |
+| `top_25_ultras` | object | Up to 25 most common `character_name` values where `feature = "Ultra Hero"` and `character_name <> "-"`, ordered by count descending. |
+| `top_25_kaiju` | object | Up to 25 most common `character_name` values where `feature = "Kaiju"` and `character_name <> "-"`, ordered by count descending. |
+
+Current local snapshot highlights:
+
+```json
+{
+  "total_cards": 1218,
+  "rarity_distribution": {
+    "AP": 141,
+    "C": 359,
+    "ExP": 7,
+    "R": 140,
+    "RR": 112,
+    "RRR": 85,
+    "RRRR": 5,
+    "SP": 56,
+    "SSSP": 15,
+    "U": 283,
+    "UR": 15
+  },
+  "feature_distribution": {
+    "Kaiju": 263,
+    "Scene": 125,
+    "Ultra Hero": 806,
+    "Ultra Mech": 24
+  },
+  "type_distribution": {
+    "ARMED": 94,
+    "BASIC": 441,
+    "DEVASTATION": 29,
+    "HAZARD": 91,
+    "INVASION": 38,
+    "METEO": 11,
+    "POWER": 207,
+    "SPEED": 182
+  }
+}
+```
+
+### `GET /favicon.png`
+
+Redirects to `/favicon.ico`.
+
+- Include in OpenAPI schema: no
+- Status code: `307`
+
+### `GET /vercel.svg`
+
+Redirects to `/favicon.ico`.
+
+- Include in OpenAPI schema: no
+- Status code: `307`
+
+## Card Object Schema
+
+Every card endpoint returns objects matching this shape.
+
+| Field | JSON type | Nullable | Description |
+| --- | --- | --- | --- |
+| `id` | integer | No | Internal SQLite row id / primary key. |
+| `name` | string | No | Card display name. |
+| `ruby` | string | Yes | Ruby/furigana or pronunciation text when present; may be `"-"`. |
+| `type_name` | string | Yes | Secondary type, form, subtype, or variant name. |
+| `character_name` | string | Yes | Character grouping used for filters and stats. |
+| `rarity` | string | Yes | Card rarity code. |
+| `type` | string | Yes | Gameplay type such as `SPEED`, `POWER`, or `BASIC`. |
+| `feature` | string | Yes | Broad feature category such as `Ultra Hero`, `Kaiju`, `Scene`, or `Ultra Mech`. |
+| `level` | string | Yes | Card level as a string. Decimal suffix `.0` is removed in API responses. |
+| `round` | string | Yes | Round as a string. Decimal suffix `.0` is removed in API responses. |
+| `battle_power_1` | integer | Yes | Battle power value for the first listed slot. |
+| `battle_power_2` | integer | Yes | Battle power value for the second listed slot. |
+| `battle_power_3` | integer | Yes | Battle power value for the third listed slot. |
+| `battle_power_4` | integer | Yes | Battle power value for the fourth listed slot. |
+| `battle_power_ex` | integer | Yes | Battle power value for EX slot, when present. |
+| `effect` | string | Yes | Gameplay effect text. |
+| `flavor_text` | string | Yes | Flavor text. |
+| `section` | string | Yes | Product section code. Current examples include `BP`, `EXD`, `PR`, `SD`, `UD`, `Y25`, `Y26`. |
+| `bundle_version` | integer | Yes | Bundle version. The Pydantic model expects an integer, though the database stores text-like numeric values. |
+| `serial` | integer | Yes | Serial number within a product or bundle. The Pydantic model expects an integer, though the database stores text-like numeric values. |
+| `branch` | string | Yes | Branch or variant marker when present. |
+| `number` | string | Yes | Public card number, such as `BP04-031`. |
+| `participating_works` | string | Yes | Related ULTRAMAN work or series. |
+| `participating_works_url` | string | Yes | URL for the related work when available. |
+| `publication_year` | integer | Yes | Publication or source year. |
+| `illustrator_name` | string | Yes | Illustrator name when available. |
+| `image_url` | string | Yes | Full-size card image URL when available. |
+| `thumbnail_image_url` | string | Yes | Thumbnail card image URL when available. |
+| `errata_enable` | boolean | No | Whether the card has errata enabled. |
+| `errata_url` | string | Yes | Errata URL when available. |
+| `display_card_bundle_names` | string | No | Product, pack, starter deck, or promotional grouping label. |
+
+Example card response shape:
+
+```json
+{
+  "id": 627,
+  "name": "Ultraman Z",
+  "ruby": "-",
+  "type_name": "Gamma Future",
+  "character_name": "Z",
+  "rarity": "U",
+  "type": "SPEED",
+  "feature": "Ultra Hero",
+  "level": "3",
+  "round": null,
+  "battle_power_1": 7000,
+  "battle_power_2": 12000,
+  "battle_power_3": 16000,
+  "battle_power_4": null,
+  "battle_power_ex": null,
+  "effect": "[effect text omitted here]",
+  "flavor_text": "[flavor text omitted here]",
+  "section": "BP",
+  "bundle_version": 4,
+  "serial": 31,
+  "branch": null,
+  "number": "BP04-031",
+  "participating_works": "Ultraman Z",
+  "participating_works_url": null,
+  "publication_year": 2020,
+  "illustrator_name": null,
+  "image_url": "https://img.ultraman-cardgame.com/images/card_details/2547b9d454d7e9634519eb693f887438e111638a.webp",
+  "thumbnail_image_url": "https://img.ultraman-cardgame.com/images/card_details/thumbnails/f5681e6647b642f3140cb0839bd6437554a7c771.webp",
+  "errata_enable": true,
+  "errata_url": "https://ultraman-cardgame.com/page/us/news/news-detail/180",
+  "display_card_bundle_names": "[BP04] Gleam of Eternal Hope"
+}
+```
+
+## Current Dataset Values
+
+These values are useful for client filters and LLM tool planning. They reflect the current local database snapshot and can change when `ultraman_cards.db` is updated.
+
+Rarities:
+
+- `AP`: 141
+- `C`: 359
+- `ExP`: 7
+- `R`: 140
+- `RR`: 112
+- `RRR`: 85
+- `RRRR`: 5
+- `SP`: 56
+- `SSSP`: 15
+- `U`: 283
+- `UR`: 15
+
+Features:
+
+- `Ultra Hero`: 806
+- `Kaiju`: 263
+- `Scene`: 125
+- `Ultra Mech`: 24
+
+Types:
+
+- `BASIC`: 441
+- `POWER`: 207
+- `SPEED`: 182
+- `ARMED`: 94
+- `HAZARD`: 91
+- `INVASION`: 38
+- `DEVASTATION`: 29
+- `METEO`: 11
+
+Levels:
+
+- `null`: 125
+- `1`: 179
+- `2`: 290
+- `3`: 356
+- `4`: 6
+- `5`: 81
+- `6`: 135
+- `7`: 46
+
+Rounds:
+
+- `null`: 1,093
+- `0`: 13
+- `1`: 25
+- `2`: 46
+- `3`: 31
+- `4`: 10
+
+Publication years:
+
+- Range: 1966 through 2025
+- Present years: 1966, 1967, 1971, 1996, 1997, 1998, 1999, 2004, 2005, 2006, 2009, 2010, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025
+
+Sections:
+
+- `BP`: 1,110
+- `SD`: 54
+- `PR`: 23
+- `EXD`: 19
+- `UD`: 10
+- `Y25`: 1
+- `Y26`: 1
+
+Known product groupings include:
+
+- `PR Card`
+- `[BP01] Guardians of the Earth`
+- `[BP02] Vortex of Crimson and Azure`
+- `[BP03] Shadow of Undying Vengeance`
+- `[BP04] Gleam of Eternal Hope`
+- `[BP05] Heroes of the Radiant Dawn`
+- `[BP06] Argent Allies & Bestial Blades`
+- `[BP07] Attack of the Great Kaiju`
+- `[EXD01] Ultraman: Rising`
+- `[SD01] Heroes of Hyper Space`
+- `[SD02] The Bonds of Zero`
+- `[SD03] OMEGA to the Future`
+- `[UD01] Ultra Deck 01 Ultraman Tiga & Ultraman Blazar`
+
+## Recommended Client Usage
+
+For browsing:
+
+1. Start with `/stats` to discover available categories.
+2. Use `/cards?limit=25` for initial previews.
+3. Add filters one at a time, such as `feature`, `rarity`, `type`, or `publication_year`.
+4. Use `/cards?number=...` for predictable lookup behavior when a card may not exist.
+
+For search:
+
+1. Use `/search?q=...` when looking for card names, effect text, or flavor text.
+2. URL-encode spaces and punctuation in `q`.
+3. Expect broad substring matches.
+
+For AI assistants:
+
+1. Prefer exact filters when the user asks for structured categories, such as rarity, type, feature, or year.
+2. Prefer `/search` when the user asks about gameplay text, rules words, named effects, or flavor text.
+3. Prefer `/cards?number=...` over `/card/{card_id}` when robust missing-card handling matters.
+4. Use `limit` for exploratory calls, then remove or increase it only when the user asks for complete result sets.
+5. Treat counts in this file as snapshot metadata; use `/stats` for live counts.
+
+## Error Handling Summary
+
+- Empty matches: most list endpoints return HTTP `200` with `[]`.
+- Missing required query parameter `q` on `/search`: HTTP `422`.
+- Non-integer `publication_year`: HTTP `422`.
+- `limit < 1`: HTTP `422`.
+- Missing `/card/{card_id}` result: currently returns an error object that does not match the declared response model; clients should handle this defensively.
+
+## Local Development
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Run the API:
+
+```bash
+uvicorn nebula_api:app --reload
+```
+
+Open:
+
+- `http://127.0.0.1:8000/docs`
+- `http://127.0.0.1:8000/llms.txt`
+

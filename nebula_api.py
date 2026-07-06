@@ -1,7 +1,9 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from fastapi.responses import RedirectResponse
 import sqlite3
+from pathlib import Path
 from typing import List, Optional
 from pydantic import BaseModel, field_validator
 
@@ -66,7 +68,9 @@ app.add_middleware(
 # ======================================================
 # Database helper
 # ======================================================
+BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = "ultraman_cards.db"
+LLMS_TXT_PATH = BASE_DIR / "public" / "llms.txt"
 
 def query_db(query: str, params: tuple = ()):
     conn = sqlite3.connect(DB_PATH)
@@ -114,6 +118,14 @@ async def redirect_favicon_png():
 @app.get("/vercel.svg", include_in_schema=False)
 async def redirect_favicon_svg():
     return RedirectResponse(url="/favicon.ico", status_code=307)
+
+@app.get("/llms.txt", include_in_schema=False)
+async def get_llms_txt():
+    return FileResponse(
+        LLMS_TXT_PATH,
+        media_type="text/plain; charset=utf-8",
+        filename="llms.txt",
+    )
 
 @app.get("/cards", response_model=List[Card])
 def get_cards(
