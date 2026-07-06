@@ -25,7 +25,7 @@ General behavior:
 Important implementation notes for clients:
 
 - Card numbers are stored in the `number` field, such as `BP04-031`.
-- `/card/{card_id}` looks up cards by `number` using a substring match, not by the integer `id` field.
+- `/card/{number}` looks up cards by `number` using a substring match, not by the integer `id` field.
 - `/cards?number=...` also uses a substring match against the `number` field.
 - `name`, `character_name`, `feature`, `type`, `level`, `round`, and `number` filters use SQL `LIKE` matching.
 - `rarity` uses exact matching with `COLLATE NOCASE`.
@@ -122,7 +122,7 @@ Validation errors:
 - `/cards?limit=0` returns HTTP `422`.
 - `/cards?publication_year=not-a-number` returns HTTP `422`.
 
-### `GET /card/{card_number}`
+### `GET /card/{number}`
 
 Returns the first card whose `number` contains the supplied path segment.
 
@@ -130,7 +130,7 @@ Path parameters:
 
 | Name | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `card_number` | string | Yes | This is intended for card numbers such as `BP04-031`. It is not the integer primary key. |
+| `number` | string | Yes | This is intended for card numbers such as `BP04-031`. It is not the integer primary key. |
 
 Examples:
 
@@ -232,19 +232,6 @@ Current local snapshot highlights:
 }
 ```
 
-### `GET /favicon.png`
-
-Redirects to `/favicon.ico`.
-
-- Include in OpenAPI schema: no
-- Status code: `307`
-
-### `GET /vercel.svg`
-
-Redirects to `/favicon.ico`.
-
-- Include in OpenAPI schema: no
-- Status code: `307`
 
 ## Card Object Schema
 
