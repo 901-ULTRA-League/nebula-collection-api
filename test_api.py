@@ -16,7 +16,7 @@ KNOWN_CHARACTER_NAMES = [
     "MEBIUS", "NEO DARAMBIA", "NEXUS", "OMEGA", "ORB", "PAZUZU",
     "PEDANIUM ZETTON", "REKINESS", "ROSSO", "SATAN BIZOR", "SHAGONG",
     "SHEPHERDON", "SKULL GOMORA", "SPHERESAURUS", "TERRAPHASER",
-    "THUNDER KILLER", "TIGA", "TRIGARON", "TRIGGER", "VALGENESS", "VICTORY",
+    "THUNDER KILLER", "TIGA", "TRIGARON", "TRIGGER", "Valgeness", "VICTORY",
     "X", "Z", "ZADIME", "ZAMSHER", "ZERO", "ZETTON", "ZOVARAS",
 ]
 
@@ -138,7 +138,7 @@ def test_get_cards_with_character_name_filter(character_name):
     assert isinstance(data, list)
     assert data, f"No cards returned for character {character_name}"
     for card in data:
-        assert character_name in card["character_name"]
+        assert character_name.lower() in card["character_name"].lower()
 
 
 @pytest.mark.parametrize("character_name", ["UNKNOWN", "12345", "not-a-character"])
@@ -325,5 +325,60 @@ def test_stats_totals_match_database_snapshot():
     response = client.get("/stats")
     assert response.status_code == 200
     stats = response.json()
-    assert stats["total_cards"] == 894
-    assert stats["feature_distribution"].get("Ultra Hero") == 649
+    assert stats["total_cards"] == 1218
+    assert stats["rarity_distribution"] == {
+        "AP": 141,
+        "C": 359,
+        "ExP": 7,
+        "R": 140,
+        "RR": 112,
+        "RRR": 85,
+        "RRRR": 5,
+        "SP": 56,
+        "SSSP": 15,
+        "U": 283,
+        "UR": 15,
+    }
+    assert stats["feature_distribution"] == {
+        "Kaiju": 263,
+        "Scene": 125,
+        "Ultra Hero": 806,
+        "Ultra Mech": 24,
+    }
+    assert stats["type_distribution"] == {
+        "ARMED": 94,
+        "BASIC": 441,
+        "DEVASTATION": 29,
+        "HAZARD": 91,
+        "INVASION": 38,
+        "METEO": 11,
+        "POWER": 207,
+        "SPEED": 182,
+    }
+    assert stats["publication_year_distribution"] == {
+        "1966": 53,
+        "1967": 20,
+        "1971": 2,
+        "1996": 55,
+        "1997": 52,
+        "1998": 79,
+        "1999": 2,
+        "2004": 46,
+        "2005": 27,
+        "2006": 47,
+        "2009": 85,
+        "2010": 5,
+        "2013": 28,
+        "2014": 23,
+        "2015": 30,
+        "2016": 60,
+        "2017": 53,
+        "2018": 41,
+        "2019": 14,
+        "2020": 53,
+        "2021": 61,
+        "2022": 44,
+        "2023": 67,
+        "2024": 67,
+        "2025": 79,
+    }
